@@ -1,0 +1,28 @@
+{
+    "total_websites": 2,
+    "websites_with_case_study": 0,
+    "active_websites": 1,
+    "inactive_websites": 1,
+    "content_length_stats": {
+        "homepage": {
+            "min": 0,
+            "max": 20211,
+            "avg": 10105.5
+        },
+        "navbar": {
+            "min": 0,
+            "max": 20194,
+            "avg": 10097.0
+        },
+        "footer": {
+            "min": 0,
+            "max": 20194,
+            "avg": 10097.0
+        },
+        "case_study": {
+            "min": 0,
+            "max": 0,
+            "avg": 0.0
+        }
+    }
+}

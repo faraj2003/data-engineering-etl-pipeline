@@ -1,0 +1,30 @@
+[
+    {
+        "website": "https://amazon.in",
+        "section": "homepage",
+        "content": "",
+        "crawl_timestamp": "2026-01-19T14:29:05.734979Z",
+        "isActive": false
+    },
+    {
+        "website": "https://amazon.in",
+        "section": "navbar",
+        "content": "",
+        "crawl_timestamp": "2026-01-19T14:29:09.339060Z",
+        "isActive": false
+    },
+    {
+        "website": "https://amazon.in",
+        "section": "footer",
+        "content": "",
+        "crawl_timestamp": "2026-01-19T14:29:12.900848Z",
+        "isActive": false
+    },
+    {
+        "website": "https://amazon.in",
+        "section": "case_study",
+        "content": "",
+        "crawl_timestamp": "2026-01-19T14:29:16.744522Z",
+        "isActive": false
+    }
+]

@@ -1,0 +1,26 @@
+[
+    {
+        "section": "homepage",
+        "url": "https://amazon.in",
+        "status": "Failed",
+        "crawl_timestamp": "2026-01-19T14:29:05.734979Z"
+    },
+    {
+        "section": "navbar",
+        "url": "https://amazon.in",
+        "status": "Failed",
+        "crawl_timestamp": "2026-01-19T14:29:09.339060Z"
+    },
+    {
+        "section": "footer",
+        "url": "https://amazon.in",
+        "status": "Failed",
+        "crawl_timestamp": "2026-01-19T14:29:12.900848Z"
+    },
+    {
+        "section": "case_study",
+        "url": "https://amazon.in/case-studies",
+        "status": "Failed",
+        "crawl_timestamp": "2026-01-19T14:29:16.744522Z"
+    }
+]

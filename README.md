@@ -1,110 +1,317 @@
-
-
 # Data Engineering ETL Pipeline
 
-> **Overview**
-> This repository contains a modular Data Engineering ETL (Extract, Transform, Load) pipeline designed to scrape, process, standardize, and aggregate website content. The pipeline is orchestrated using Apache Airflow.
+## Overview
 
-## Project Architecture
+This repository contains a modular Extract, Transform, Load (ETL) pipeline designed to collect, process, standardize, and analyze website content from multiple e-commerce platforms. The pipeline is orchestrated using Apache Airflow, enabling automated execution of each stage while maintaining clear task dependencies.
 
-The pipeline is broken down into distinct stages to ensure modularity, ease of maintenance, and scalability. It follows a classic ETL pattern tailored for web data:
+The project demonstrates core data engineering principles including modular pipeline design, workflow orchestration, structured data processing, centralized logging, and analytics generation.
 
-* **Crawler:** Fetches raw HTML content from target websites.
-* **Extractor:** Parses the raw HTML to extract meaningful content and metadata.
-* **Transformer:** Cleans and standardizes the extracted data into a unified format.
-* **Aggregator:** Computes metrics and aggregates the standardized data for downstream analytics.
-* **Orchestration:** Manages the execution flow and dependencies of the above tasks using an Airflow DAG.
+## Features
 
----
+* Modular ETL pipeline architecture
+* Apache Airflow workflow orchestration
+* Automated web crawling with retry mechanism
+* HTML content extraction using BeautifulSoup
+* Data standardization into a unified JSON schema
+* Aggregated metrics generation
+* Centralized logging across pipeline stages
 
-## Directory Structure
+## Architecture
 
-Below is the layout of the project source code:
+The pipeline follows a staged ETL architecture where each module performs a single responsibility.
 
 ```text
-data-engineering-etl-pipeline/
-├── FARAJ ISLAM/
-│   ├── dag_diagram.txt
-│   ├── requirements.txt
-│   ├── README.md
-│   ├── dags/
-│   │   └── website_content_pipeline.py
-│   └── src/
-│       ├── aggregator/
-│       │   └── metrics.py
-│       ├── crawler/
-│       │   └── crawler.py
-│       ├── extractor/
-│       │   └── content_extractor.py
-│       ├── transformer/
-│       │   └── standardize.py
-│       └── utils/
-│           └── logger.py
+            Apache Airflow
+                   │
+                   ▼
+            Website Crawler
+                   │
+                   ▼
+          Content Extractor
+                   │
+                   ▼
+      Data Standardization
+                   │
+                   ▼
+        Metrics Aggregator
 
 ```
 
----
+Each stage produces intermediate outputs which become the input for the next stage, making the pipeline easy to debug, maintain, and extend.
 
-## Component Details
+## Pipeline Stages
 
-### 1. Source Modules (`src/`)
+### 1. Crawl
 
-**Crawler (`src/crawler/crawler.py`)**
-Handles the initial data ingestion phase. It is responsible for making HTTP requests, managing retries, handling pagination, and downloading the raw content from the target web sources.
+**Location**
 
-**Extractor (`src/extractor/content_extractor.py`)**
-Takes the raw output from the crawler and extracts the required fields (e.g., titles, body text, publication dates, authors). It likely utilizes parsing libraries like BeautifulSoup or lxml.
+`src/crawler/crawler.py`
 
-**Transformer (`src/transformer/standardize.py`)**
-Applies data quality rules to the extracted content. This includes cleaning text, standardizing date formats, handling missing values, and ensuring the output schema is consistent.
+The crawler is responsible for collecting raw HTML content from the configured target websites.
+Its responsibilities include:
 
-**Aggregator (`src/aggregator/metrics.py`)**
-Performs analytical computations on the standardized data. It generates summary metrics (e.g., word counts, keyword frequency, content categorization) to provide immediate value for reporting.
+* Sending HTTP requests
+* Managing retry attempts for failed requests
+* Downloading webpage content
+* Capturing crawl timestamps
+* Saving raw HTML for downstream processing
 
-**Utilities (`src/utils/logger.py`)**
-Provides a centralized logging configuration used across all modules to track pipeline execution, debug issues, and monitor performance.
+The crawler acts as the ingestion layer of the ETL pipeline.
 
-### 2. Orchestration (`dags/`)
+### 2. Extract
 
-**Website Content Pipeline (`dags/website_content_pipeline.py`)**
-The Apache Airflow Directed Acyclic Graph (DAG) that ties the source modules together. It defines the execution schedule, sets task dependencies (Crawl -> Extract -> Transform -> Aggregate), and handles failure alerts.
+**Location**
 
-**DAG Diagram (`dag_diagram.txt`)**
-A text-based visual representation of the Airflow task dependencies and execution flow.
+`src/extractor/content_extractor.py`
 
----
+The extractor parses the downloaded HTML using BeautifulSoup and extracts relevant website components.
+Examples include:
 
-## Setup and Installation
+* Navigation content
+* Homepage content
+* Footer content
+* Additional structured webpage sections
 
-**Prerequisites:**
-Ensure you have Python 3.8+ and Apache Airflow installed on your system.
+The extracted content is converted into structured JSON along with metadata such as:
 
-**Step 1:** Clone the repository and navigate to the project directory.
+* Website name
+* Section name
+* Crawl timestamp
+* Activity status
 
-**Step 2:** Install the required Python dependencies.
+This stage converts unstructured HTML into structured data suitable for transformation.
+
+### 3. Transform
+
+**Location**
+
+`src/transformer/standardize.py`
+
+The transformation stage standardizes the extracted data into a consistent schema.
+Key responsibilities include:
+
+* Combining extracted sections
+* Enforcing a common JSON structure
+* Inserting default values for unavailable sections
+* Preparing clean datasets for downstream analytics
+
+This stage ensures every processed website follows the same data format regardless of differences in the source HTML.
+
+### 4. Aggregate
+
+**Location**
+
+`src/aggregator/metrics.py`
+
+The aggregation stage generates summary statistics from the standardized datasets.
+Example metrics include:
+
+* Total websites processed
+* Active websites
+* Websites containing case-study information
+* Content length statistics
+* Pipeline summary metrics
+
+The generated metrics can be consumed by reporting or downstream analytical workflows.
+
+## Workflow Orchestration
+
+The entire ETL pipeline is orchestrated using Apache Airflow.
+
+**DAG Location**
+
+`dags/website_content_pipeline.py`
+
+The DAG defines the execution order of the pipeline:
+
+```text
+Crawler
+      │
+      ▼
+Extractor
+      │
+      ▼
+Transformer
+      │
+      ▼
+Aggregator
+
+```
+
+Airflow manages:
+
+* Task scheduling
+* Task dependencies
+* Retry policies
+* Execution monitoring
+* Centralized logging
+
+This separation between orchestration and business logic improves maintainability and scalability.
+
+## Project Structure
+
+```text
+data-engineering-etl-pipeline/
+│
+├── dags/
+│   └── website_content_pipeline.py
+│
+├── src/
+│   ├── crawler/
+│   │   └── crawler.py
+│   │
+│   ├── extractor/
+│   │   └── content_extractor.py
+│   │
+│   ├── transformer/
+│   │   └── standardize.py
+│   │
+│   ├── aggregator/
+│   │   └── metrics.py
+│   │
+│   └── utils/
+│       └── logger.py
+│
+├── requirements.txt
+├── dag_diagram.txt
+└── README.md
+
+```
+
+## Logging
+
+The project includes a centralized logging utility located in:
+
+`src/utils/logger.py`
+
+Logging is used throughout the pipeline to record:
+
+* Pipeline execution progress
+* Successful task completion
+* Retry attempts
+* Runtime errors
+* Debug information
+
+Centralized logging simplifies troubleshooting and monitoring during pipeline execution.
+
+## Technologies Used
+
+* Python
+* Apache Airflow
+* BeautifulSoup4
+* Requests
+* JSON
+* Logging
+
+## Installation
+
+**Clone the repository**
+
+```bash
+git clone https://github.com/faraj2003/data-engineering-etl-pipeline.git
+cd data-engineering-etl-pipeline
+
+```
+
+**Create a virtual environment**
+
+```bash
+python -m venv venv
+
+```
+
+**Windows**
+
+```cmd
+venv\Scripts\activate
+
+```
+
+**Linux/macOS**
+
+```bash
+source venv/bin/activate
+
+```
+
+**Install dependencies**
 
 ```bash
 pip install -r requirements.txt
 
 ```
 
-**Step 3:** Configure Airflow to recognize the project DAGs. Add the project's `dags/` directory to your `airflow.cfg` file, or symlink the DAG file to your default Airflow DAGs folder.
+**Configure Apache Airflow**
+
+Place the DAG inside your Airflow DAG directory or create a symbolic link.
+Example:
 
 ```bash
 ln -s /path/to/project/dags/website_content_pipeline.py ~/airflow/dags/
 
 ```
 
-**Step 4:** Start the Airflow webserver and scheduler to monitor and trigger your pipeline.
+Start Airflow services:
 
 ```bash
-airflow scheduler &
+airflow scheduler
 airflow webserver -p 8080
 
 ```
 
----
+Open:
 
-## Usage
+`http://localhost:8080`
 
-Once the Airflow server is running, navigate to `http://localhost:8080` in your web browser. Locate the `website_content_pipeline` in your DAGs list, toggle it on, and trigger it manually to begin the ETL process. Monitor the logs generated by `logger.py` within the Airflow UI for detailed execution feedback.
+Locate `website_content_pipeline`, enable the DAG, and trigger a run.
+
+## Pipeline Output
+
+During execution, the pipeline produces multiple intermediate outputs that correspond to each ETL stage.
+
+```text
+Target Websites
+        │
+        ▼
+    Raw HTML
+        │
+        ▼
+Structured JSON
+        │
+        ▼
+Standardized Dataset
+        │
+        ▼
+Business Metrics
+
+```
+
+This layered processing approach makes debugging easier while maintaining a clear separation of responsibilities between pipeline stages.
+
+### Example Standardized Output
+
+```json
+{
+  "website": "amazon.in",
+  "section": "homepage",
+  "content": "...",
+  "crawl_timestamp": "2026-07-10T10:25:00",
+  "isActive": true
+}
+
+```
+
+## Future Improvements
+
+Potential enhancements include:
+
+* Load standardized data into a relational database (PostgreSQL/MySQL)
+* Integrating cloud object storage such as Amazon S3
+* Adding automated data quality validation checks
+* Containerizing the pipeline using Docker
+* Implementing CI/CD for automated testing and deployment
+* Extending Airflow scheduling for production workloads
+
+## Author
+
+Faraj Islam

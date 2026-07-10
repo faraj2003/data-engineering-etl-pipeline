@@ -1,325 +1,127 @@
-# **Data Engineer Intern – Website Content Pipeline**
 
+# Data Engineering ETL Pipeline: E-Commerce Scraper & Aggregator
 
+## 📌 Overview
 
-### **Project Overview**
+This project is an automated **Extract, Transform, Load (ETL) pipeline** designed to scrape, process, and analyze web data from major e-commerce platforms (specifically **Amazon.in** and **Flipkart.com**).
 
+Orchestrated using **Apache Airflow**, the pipeline crawls raw HTML content from target websites, extracts specific page components (like navbars, footers, and homepages), standardizes the data into a structured JSON format, and computes analytical metrics.
 
+## 🏗️ Architecture & Pipeline Stages
 
-This project implements an end-to-end data pipeline to crawl websites, extract and structure content, standardize it, and compute aggregated metrics. The pipeline is designed to be reliable, repeatable, and scalable, orchestrated using Apache Airflow.
+The ETL process is broken down into four primary modular stages:
 
+1. **Crawler (`src/crawler/crawler.py`):** Fetches raw HTML content and metadata from target e-commerce websites and stores them in the `data/raw/` directory.
+2. **Extractor (`src/extractor/content_extractor.py`):** Parses the raw HTML to extract specific page elements (navbar, footer, homepage features, and case studies), saving the intermediate results as JSON in `data/processed/`.
+3. **Transformer (`src/transformer/standardize.py`):** Cleans and standardizes the extracted JSON data into a unified schema, storing the final output in `data/standardized/`.
+4. **Aggregator (`src/aggregator/metrics.py`):** Analyzes the standardized data to generate business or pipeline metrics, outputting to `data/aggregates/metrics.json`.
 
+## 📂 Directory Structure
 
-##### **The pipeline covers:**
-
-
-
-* Website Crawling \& Raw Data Capture
-
-
-
-* Content Extraction \& Tagging
-
-
-
-* Standardized Data Model Transformation
-
-
-
-* Aggregation \& Metrics Computation
-
-
-
-* Orchestration via Airflow DAG
-
-
-
-#### **Folder Structure:**
-
-
-
-data-engineer-intern-task/
-
+```text
+data-engineering-etl-pipeline/
 │
-
-├── dags/
-
-│   └── website\_content\_pipeline.py    # Airflow DAG
-
+├── dags/                                 # Apache Airflow DAGs
+│   └── website_content_pipeline.py       # Main pipeline orchestration script
 │
-
-├── src/
-
+├── data/                                 # Local Data Lake 
+│   ├── raw/                              # Stage 1: Raw HTML and metadata
+│   │   ├── amazon.in/
+│   │   └── www.flipkart.com/
+│   ├── processed/                        # Stage 2: Extracted component JSONs
+│   │   ├── amazon.in/
+│   │   └── www.flipkart.com/
+│   ├── standardized/                     # Stage 3: Unified/Cleaned JSON data
+│   │   ├── amazon.in.json
+│   │   └── www.flipkart.com.json
+│   └── aggregates/                       # Stage 4: Computed metrics
+│       └── metrics.json
+│
+├── src/                                  # Source Code Modules
 │   ├── crawler/
-
-│   │   └── crawler.py
-
+│   │   └── crawler.py                    # Web scraping logic
 │   ├── extractor/
-
-│   │   └── content\_extractor.py
-
+│   │   └── content_extractor.py          # HTML parsing and extraction logic
 │   ├── transformer/
-
-│   │   └── standardize.py
-
+│   │   └── standardize.py                # Data transformation and schema enforcement
 │   ├── aggregator/
-
-│   │   └── metrics.py
-
+│   │   └── metrics.py                    # Metric calculation logic
 │   └── utils/
-
-│       └── logger.py
-
+│       └── logger.py                     # Custom logging configuration
 │
+├── requirements.txt                      # Python dependencies
+├── dag_diagram.txt                       # Visual representation of the Airflow DAG
+└── README.md                             # Project documentation
 
-├── data/
+```
 
-│   ├── raw/                           # Raw HTML + metadata
+## 🚀 Getting Started
 
-│   ├── processed/                     # Extracted and tagged content
+### Prerequisites
 
-│   ├── standardized/                  # JSON per website
+* **Python 3.8+**
+* **Apache Airflow** installed and initialized
+* Virtual Environment (recommended)
 
-│   └── aggregates/                    # metrics.json
+### Installation & Setup
 
-│
+1. **Clone the repository (or navigate to the project directory):**
+```bash
+cd data-engineering-etl-pipeline
 
-├── README.md
+```
 
-└── requirements.txt
 
+2. **Set up a virtual environment:**
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows use: venv\Scripts\activate
 
+```
 
-#### **Pipeline Steps**
 
-
-
-###### **Step 1 – Crawl Websites**
-
-
-
-* Crawls multiple company websites (5–10)
-
-
-
-* Captures homepage, navbar, footer, case studies, and internal pages
-
-
-
-* Stores raw HTML + metadata in data/raw/<website>/
-
-
-
-* Logs HTTP status, URL, and crawl timestamp
-
-
-
-###### **Step 2 – Extract \& Tag Content**
-
-
-
-* Extracts readable text from HTML using BeautifulSoup
-
-
-
-* Categorizes into homepage, navbar, footer, case\_study
-
-
-
-* Cleans content by removing scripts and styles
-
-
-
-* Stores JSON files per section in data/processed/<website>/
-
-
-
-###### **Step 3 – Standardize Data**
-
-
-
-* Combines all sections into a standardized JSON record per website
-
-
-
-Example schema:
-
-
-
-{
-
-&nbsp; "website": "https://example.com",
-
-&nbsp; "section": "case\_study",
-
-&nbsp; "content": "Extracted text...",
-
-&nbsp; "crawl\_timestamp": "2026-01-10T10:30:00Z",
-
-&nbsp; "isActive": true
-
-}
-
-
-
-
-
-* Stored in data/standardized/<website>.json
-
-
-
-###### **Step 4 – Aggregation \& Metrics**
-
-
-
-Computes:
-
-
-
-* Number of websites with case studies
-
-
-
-* Active vs inactive websites
-
-
-
-* Content length statistics per section
-
-
-
-* Aggregated output stored in data/aggregates/metrics.json
-
-
-
-###### **Step 5 – Airflow DAG**
-
-
-
-DAG: website\_content\_pipeline.py orchestrates all steps:
-
-
-
-crawl\_websites → extract\_content → standardize\_data → compute\_metrics
-
-
-
-
-
-**DAG features:**
-
-
-
-* Clear task separation
-
-
-
-* Idempotent and retryable tasks
-
-
-
-* Easy to extend to more websites or sections
-
-
-
-
-
-
-
-### **Logging \& Error Handling**
-
-
-
-* Each module uses a logger for info, warnings, and errors
-
-
-
-* Missing HTML files or empty sections are handled gracefully
-
-
-
-* Tasks are idempotent — reruns overwrite previous outputs safely
-
-
-
-
-
-### **Scaling Considerations**
-
-
-
-* Adding more websites only requires updating the websites list in crawler.py
-
-
-
-* Modular design allows adding new extraction rules, sections, or analytics easily
-
-
-
-* Can be extended to cloud storage (S3) for raw/processed/standardized data
-
-
-
-
-
-### **How to Run**
-
-
-
-* Install dependencies:
-
-
-
+3. **Install dependencies:**
+```bash
 pip install -r requirements.txt
 
+```
+
+
+4. **Configure Airflow:**
+* Point your `AIRFLOW_HOME` to a desired directory.
+* Symlink or copy the `dags/` folder into your Airflow DAGs directory.
+* Ensure Airflow has read/write permissions to the `data/` directory.
 
 
 
+### Running the Pipeline
 
-* Run modules manually (optional):
+1. Start the Airflow webserver and scheduler:
+```bash
+airflow scheduler &
+airflow webserver -p 8080
 
-
-
-python src/crawler/crawler.py
-
-python src/extractor/content\_extractor.py
-
-python src/transformer/standardize.py
-
-python src/aggregator/metrics.py
+```
 
 
+2. Open the Airflow UI (`http://localhost:8080`).
+3. Locate the `website_content_pipeline` DAG.
+4. Unpause the DAG and trigger it manually to begin the ETL extraction process.
 
+## 📊 Data Flow & Outputs
 
+* **Raw Data:** HTML files (e.g., `footer.html`, `homepage.html`) are saved in `data/raw/<domain>/`.
+* **Processed Data:** Parsed JSON files (e.g., `navbar.json`, `footer.json`) are generated in `data/processed/<domain>/`.
+* **Standardized Data:** Consolidated JSON payloads are created in `data/standardized/`.
+* **Aggregates:** A final `metrics.json` file is produced in `data/aggregates/` containing insights based on the pipeline run.
 
-#### **Airflow DAG :**
+## 🛠️ Built With
 
+* **Python** - Core programming language
+* **Apache Airflow** - Workflow orchestration
+* **BeautifulSoup / LXML** (Inferred) - For HTML content extraction
+* **JSON** - Standardized data format
 
+## 👤 Author
 
-* DAG is included in dags/website\_content\_pipeline.py
-
-
-
-* Can be run in Airflow by placing in the DAG folder and triggering manually
-
-
-
-
-
-### **Deliverables**
-
-
-
-* dags/website\_content\_pipeline.py → Airflow DAG
-
-
-
-* src/ → Python modules for crawling, extraction, transformation, and metrics
-
-
-
-* data/ → Sample raw, processed, standardized, and aggregated outputs
-
-
-
-* README.md → This file explaining design decisions and pipeline workflow
+**Faraj Islam**

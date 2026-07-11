@@ -66,4 +66,4 @@ def crawl_websites():
 # RUN
 # -----------------------------
 if __name__ == "__main__":
-    crawl_all_websites()
+    crawl_websites()

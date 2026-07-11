@@ -58,7 +58,7 @@ def crawl_website(website):
         json.dump(metadata, f, indent=4)
     print(f"Crawled {website}")
 
-def crawl_all_websites():
+def crawl_websites():
     for website in WEBSITES:
         crawl_website(website)
 
